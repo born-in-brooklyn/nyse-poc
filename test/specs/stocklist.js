@@ -5,10 +5,20 @@ describe('Stock directory page', () => {
             var retval = $$(selector);
             return retval.length > 0;
         });
-        return $$(selector);
     };
 
-    links = () => waitUntilGreaterThanZero("//tr/td[1]/a");
+    symbolHeader = () => $("//tr/th[1][text()='Symbol']");
+    nameHeader = () => $("//tr/th[2][text()='Name']");
+
+
+    links = () => {
+        var linkSelector="//tr/td[1]/a";
+        waitUntilGreaterThanZero(linkSelector);   
+        return $$(linkSelector);
+    }
+
+    firstLink = () => $("//tr[1]/td[1]/a");
+    lastLink = () => $("//tr[last()]/td[1]/a");
 
     pagerItem = (itemText) => $(`//ul[@class='pagination']/li[not(contains(@class,'disabled'))][a[text()='${itemText}']]`); 
     pagerItemDisabled = (itemText) => $(`//ul[@class='pagination']/li[contains(@class,'disabled')][a[text()='${itemText}']]`); 
@@ -27,10 +37,8 @@ describe('Stock directory page', () => {
     });
 
     it('must display Symbol and Name for the corresponding company', () => {
-        let symbolHeader = $("//tr/th[1][text()='Symbol']");
-        let nameHeader = $("//tr/th[2][text()='Name']");
-        expect(symbolHeader).toBeDisplayed();
-        expect(nameHeader).toBeDisplayed();
+        expect(symbolHeader()).toBeDisplayed();
+        expect(nameHeader()).toBeDisplayed();
     });
 
 
@@ -91,5 +99,39 @@ describe('Stock directory page', () => {
         expect(pagerFirstDisabled()).toBeDisplayed();
         expect(pagerPreviousDisabled()).toBeDisplayed();
         expect(pagerItemDisabled('1')).toBeDisplayed();
+    });
+
+    waitUntilFirstLink = (comparisonFunc) => {
+        browser.waitUntil(() => {
+            var current = firstLink();
+            if(!current.isExisting())
+            {
+                return false;    
+            }
+            
+            currentText = current.getText();
+            return comparisonFunc(currentText);
+        });
+    };
+
+    it('sorts in symbol reverse order when you click the symbol header', () => {
+
+        var firstSymbol = firstLink().getText();
+
+        pagerLast().click();
+        waitUntilFirstLink((currentText) => firstSymbol != currentText)
+
+        var lastSymbol = lastLink().getText();
+
+        pagerFirst().click();
+        waitUntilFirstLink((currentText) => firstSymbol == currentText)
+
+        symbolHeader().click();
+        waitUntilFirstLink((currentText) => lastSymbol == currentText)
+
+        expect(firstLink().getText()).toEqual(lastSymbol);
+
+        symbolHeader().click();
+        waitUntilFirstLink((currentText) => firstSymbol == currentText)
     });
 });
