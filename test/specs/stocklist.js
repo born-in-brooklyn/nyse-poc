@@ -177,4 +177,29 @@ describe('Stock directory page', () => {
         waitUntilFirstName((currentText) => expectedFirstName == currentText)
     });
 
+    it('symbol link navigates to quote page', () => {
+
+        //get the expected name and symbol
+        var expectedName = firstName().getText();
+        var expectedSymbol = firstLink().getText();
+
+        //navigate to quote page
+        firstLink().click();
+
+        //name and symbol should show up in quote
+        var quoteNameSpan = $(`//div[contains(@class,'d-dquote-symbol')]/span[text()='${expectedName}']`);
+        expect(quoteNameSpan).toBeDisplayed();
+
+        var quoteSymbolSpan = $(`//div[contains(@class,'d-dquote-symbol')]/span[text()=' (${expectedSymbol})']`);
+        expect(quoteSymbolSpan).toBeDisplayed();
+    });
+
+    it('filters the list by symbol name', () => {
+
+        var instrumentFilter = $("//input[@id='instrumentFilter']");
+        instrumentFilter.setValue("IBM");
+
+        waitUntilFirstLink((currentText) => "IBM" == currentText);
+        expect(firstName().getText()).toEqual("INTERNATIONAL BUS MACH CORP");
+    });
 });
