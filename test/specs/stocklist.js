@@ -20,6 +20,9 @@ describe('Stock directory page', () => {
     firstLink = () => $("//tr[1]/td[1]/a");
     lastLink = () => $("//tr[last()]/td[1]/a");
 
+    firstName = () => $("//tr[1]/td[2]");
+    lastName = () => $("//tr[last()]/td[2]");
+
     pagerItem = (itemText) => $(`//ul[@class='pagination']/li[not(contains(@class,'disabled'))][a[text()='${itemText}']]`); 
     pagerItemDisabled = (itemText) => $(`//ul[@class='pagination']/li[contains(@class,'disabled')][a[text()='${itemText}']]`); 
 
@@ -134,4 +137,44 @@ describe('Stock directory page', () => {
         symbolHeader().click();
         waitUntilFirstLink((currentText) => firstSymbol == currentText)
     });
+
+    waitUntilFirstName = (comparisonFunc) => {
+        browser.waitUntil(() => {
+            var current = firstName();
+            if(!current.isExisting())
+            {
+                return false;    
+            }
+            
+            currentText = current.getText();
+            return comparisonFunc(currentText);
+        });
+    };
+
+    it('sorts in name reverse order when you click the name header', () => {
+
+        var firstNameSortBySymbol = firstName().getText();
+
+        //forward sort by Name
+        nameHeader().click();
+        waitUntilFirstName((currentText) => firstNameSortBySymbol != currentText)
+
+        var expectedFirstName = firstName().getText();
+        
+        pagerLast().click();
+        waitUntilFirstName((currentText) => expectedFirstName != currentText)
+
+        var actualLastName = lastName().getText();
+
+        //reverse sort by name
+        nameHeader().click();
+        waitUntilFirstName((currentText) => actualLastName == currentText)
+
+        expect(firstName().getText()).toEqual(actualLastName);
+
+        // forward sort again 
+        nameHeader().click();
+        waitUntilFirstName((currentText) => expectedFirstName == currentText)
+    });
+
 });
