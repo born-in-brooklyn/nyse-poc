@@ -7,18 +7,10 @@ describe('Stock directory page', () => {
 
     beforeEach(() => {
         browser.url('https://www.nyse.com/listings_directory/stock');
-    });
-
-    it('symbol link matched api url', () => {
-
-        //get the expected name and symbol
-        var expectedName = firstName().getText();
-        var expectedSymbol = firstLink().getText();
-        var expectedUrl = firstLink().getAttribute('href');
 
         browser.addCommand('makeStockFilterRequest', function (filter) {
             var request = require('request-promise');
-    
+        
             var args = {
                 encoding: 'utf8',
                 uri: 'https://www.nyse.com/api/quotes/filter',
@@ -34,13 +26,21 @@ describe('Stock directory page', () => {
                 },
                 headers: { "Content-Type": "application/json" }
             };
-    
+        
             return request(args).then((result) => {
                 return result;
             }).catch((result) => {
                 console.log(result);
             });
         });
+    });
+
+    it('symbol link matched api url', () => {
+
+        //get the expected name and symbol
+        var expectedName = firstName().getText();
+        var expectedSymbol = firstLink().getText();
+        var expectedUrl = firstLink().getAttribute('href');
 
         var response = browser.makeStockFilterRequest(expectedSymbol);
         expect(response).toBeDefined();

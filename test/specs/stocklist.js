@@ -22,6 +22,8 @@ describe('Stock directory page', () => {
 
     firstName = () => $("//tr[1]/td[2]");
     lastName = () => $("//tr[last()]/td[2]");
+    instrumentFilter = () => $("//input[@id='instrumentFilter']");
+
 
     pagerItem = (itemText) => $(`//ul[@class='pagination']/li[not(contains(@class,'disabled'))][a[text()='${itemText}']]`); 
     pagerItemDisabled = (itemText) => $(`//ul[@class='pagination']/li[contains(@class,'disabled')][a[text()='${itemText}']]`); 
@@ -196,10 +198,34 @@ describe('Stock directory page', () => {
 
     it('filters the list by symbol name', () => {
 
-        var instrumentFilter = $("//input[@id='instrumentFilter']");
-        instrumentFilter.setValue("IBM");
+        instrumentFilter().setValue("IBM");
 
         waitUntilFirstLink((currentText) => "IBM" == currentText);
         expect(firstName().getText()).toEqual("INTERNATIONAL BUS MACH CORP");
+    });
+
+    it('disables pager when less than 10 records', () => {
+        instrumentFilter().setValue("IBM");
+
+        waitUntilFirstLink((currentText) => "IBM" == currentText);
+        expect(pagerLastDisabled()).toBeDisplayed();
+        expect(pagerNextDisabled()).toBeDisplayed();
+        expect(pagerFirstDisabled()).toBeDisplayed();
+        expect(pagerPreviousDisabled()).toBeDisplayed();
+    });
+
+    it('shows error message when symbol not found', () => {
+        var firstSymbol = firstLink().getText();
+
+        instrumentFilter().setValue("IBMQ");
+
+        browser.waitUntil(() => {
+            var current = firstLink();
+            return !current.isExisting();
+        });
+              
+        var actual = $("//tr/td[1]")
+        expect(actual).toBeDisplayed();
+        expect(actual.getText()).toEqual("Sorry, we couldn't find any instruments that match your criteria.");
     });
 });
